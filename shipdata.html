@@ -1,7 +1,7 @@
+<!DOCTYPE html>
 <html>
 <body>
-<div id="text"></div>
-</body>
+<pre id="text"></pre>
 <script>
 
 <!-- ここにコピーしたデータをペースト -->
@@ -9,4 +9,5 @@
 var str = JSON.stringify(svdata.api_data.api_ship.filter(v => v.api_locked), ['api_ship_id', 'api_lv', 'api_kyouka', 'api_exp']);
 document.querySelector("#text").innerHTML = str;
 </script>
+</body>
 </html>
