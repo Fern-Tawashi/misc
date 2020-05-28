@@ -78,7 +78,9 @@ function convert_sarashi(data) {
   let sarashi_data = {};
   data.forEach(e => {
     let id = shipid[e.api_ship_id].id;
-    let item = e.api_lv + "." + shipid[e.api_ship_id].sid;
+    let item = e.api_lv;
+    if (e.api_lv > 9) // 最小改レベル
+       item += "." + shipid[e.api_ship_id].sid;
     if (!sarashi_data[id]) {
       sarashi_data[id] = [];
     }
