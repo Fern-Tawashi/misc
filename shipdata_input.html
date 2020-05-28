@@ -4,23 +4,97 @@
 <meta charset="utf-8">
 </head>
 <body>
-<h1 style="font-size:medium;font-weight:normal;">「艦これ」svdataから艦隊分析入力データを生成</h1>
 <div style="width:800px;">
-<form id="form">
-<textarea id="src" style="width:100%;height:240px;" placeholder="コピーしたデータをここに貼り付ける"></textarea>
-<p style="text-align:center;"><input type="submit" value="↓　変換　↓"/></p>
-<textarea readonly id="dst" style="width:100%;height:240px;"></textarea>
-</form>
+  <h1 style="font-size:medium;font-weight:normal;">「艦これ」svdataから艦隊分析入力データを生成</h1>
+  <form id="form">
+  <div style="display:inline-block;margin:12px 0px;padding:6px 12px;border-style:dotted;border-color:#888;">
+    <label><input type="checkbox" name="cond_lock" id="chk_cond_lock" checked />ロックした艦娘のみ抽出</label>
+  </div>
+  <textarea id="src" style="width:100%;height:200px;" placeholder="コピーしたデータをここに貼り付ける"></textarea>
+  <p style="text-align:center;">
+    <input type="submit" value="↓　変換　↓"/>
+  </p>
+  <label>艦隊分析：<textarea readonly id="dst1" style="width:100%;height:160px;"></textarea></label>
+  <label>艦隊晒し：<textarea readonly id="dst2" style="width:100%;height:160px;"></textarea></label>
+  </form>
+  <div>
+    <p style="color:red;" id="err_msg"></p>
+  </div>
 </div>
+<script src="shipid_data.js"></script>
 <script>
 document.querySelector("#form").addEventListener("submit", function(e) {
-  let text = document.querySelector("#src").value;
-  let svdata = JSON.parse(text.split('=')[1]);
-  let str = JSON.stringify(svdata.api_data.api_ship.filter(v => v.api_locked), ['api_ship_id', 'api_lv', 'api_kyouka', 'api_exp']);
-  document.querySelector("#dst").textContent = str;
+  document.querySelector("#dst1").textContent = "";
+  document.querySelector("#dst2").textContent = "";
+  document.querySelector("#err_msg").innerHTML = "";
 
-  event.preventDefault();
+  let text = document.querySelector("#src").value;
+  try {
+    let svdata = JSON.parse(text.split('=')[1]);
+    let f1 = () => true;
+    let cond_lock = document.querySelector("#chk_cond_lock").checked;
+    if (cond_lock) {
+      f1 = v => v.api_locked;
+    }
+    let data_filtered = svdata.api_data.api_ship.filter(f1);
+    let str1 = JSON.stringify(data_filtered, ['api_ship_id', 'api_lv', 'api_kyouka', 'api_exp']);
+    let str2 = convert_sarashi(data_filtered);
+    document.querySelector("#dst1").textContent = str1;
+    document.querySelector("#dst2").textContent = str2;
+  }
+  catch(err) {
+    document.querySelector("#err_msg").innerHTML = err;
+  }
+  finally {
+    event.preventDefault();
+  }
 });
+
+/**
+ * json変換
+ */
+function convert_json(data) {
+  let json_data = [];
+  data.forEach(e => {
+    json_data.push(
+      {
+        id:   e.api_ship_id,
+        lv:   e.api_lv,
+        exp:  e.api_exp[0],
+        hp:   e.api_kyouka[5],
+        asw:  e.api_kyouka[6],
+        luck: e.api_kyouka[4]
+      }
+    );
+  });
+  let str = JSON.stringify(json_data);
+  return str;
+}
+
+/**
+ * 艦隊晒し用変換
+ */
+function convert_sarashi(data) {
+  let sarashi_data = {};
+  data.forEach(e => {
+    let id = shipid[e.api_ship_id].id;
+    let item = e.api_lv + "." + shipid[e.api_ship_id].sid;
+    if (!sarashi_data[id]) {
+      sarashi_data[id] = [];
+    }
+    sarashi_data[id].push(item);
+  });
+
+  let items = [];
+  Object.keys(sarashi_data).forEach(e => {
+    let item = sarashi_data[e];
+    let str = e + ":" + item.join(",");
+    items.push(str);
+  });
+
+  let str = ".2|" + items.join("|");
+  return str;
+}
 </script>
 </body>
 </html>
