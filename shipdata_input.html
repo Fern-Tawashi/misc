@@ -2,20 +2,39 @@
 <html>
 <head>
 <meta charset="utf-8">
+<style type='text/css'>
+button {
+  appearance:none;
+  border-style: solid;
+  border-width:1px;
+  border-color:rgb(38,160,218);
+  background-color:rgb(166,244,255);
+}
+div.option {
+  display:inline-block;
+  margin:12px 0px;
+  padding:6px 12px;
+  border-style:dotted;
+  border-color:#888;
+}
+textarea {
+  width:100%;
+}
+</style>
 </head>
 <body>
 <div style="width:800px;">
   <h1 style="font-size:medium;font-weight:normal;">「艦これ」svdataから艦隊分析入力データを生成</h1>
   <form id="form">
-  <div style="display:inline-block;margin:12px 0px;padding:6px 12px;border-style:dotted;border-color:#888;">
+  <div class="option">
     <label><input type="checkbox" name="cond_lock" id="chk_cond_lock" checked />ロックした艦娘のみ抽出</label>
   </div>
-  <textarea id="src" style="width:100%;height:200px;" placeholder="コピーしたデータをここに貼り付ける"></textarea>
+  <textarea id="src" style="height:200px;" placeholder="コピーしたデータをここに貼り付ける"></textarea>
   <p style="text-align:center;">
-    <input type="submit" value="↓　変換　↓"/>
+    <button type="submit">↓　変換　↓</button>
   </p>
-  <label>艦隊分析：<textarea readonly id="dst1" style="width:100%;height:160px;"></textarea></label>
-  <label>艦隊晒し：<textarea readonly id="dst2" style="width:100%;height:160px;"></textarea></label>
+  <label>艦隊分析：<textarea readonly id="dst1" style="height:160px;"></textarea></label>
+  <label>艦隊晒し：<textarea readonly id="dst2" style="height:160px;"></textarea></label>
   </form>
   <div>
     <p style="color:red;" id="err_msg"></p>
@@ -79,8 +98,9 @@ function convert_sarashi(data) {
   data.forEach(e => {
     let id = shipid[e.api_ship_id].id;
     let item = e.api_lv;
-    if (e.api_lv > 9) // 最小改レベル
-       item += "." + shipid[e.api_ship_id].sid;
+    if (e.api_lv > 9) { // 最小改レベル
+      item += "." + shipid[e.api_ship_id].sid;
+    }
     if (!sarashi_data[id]) {
       sarashi_data[id] = [];
     }
@@ -89,8 +109,7 @@ function convert_sarashi(data) {
 
   let items = [];
   Object.keys(sarashi_data).forEach(e => {
-    let item = sarashi_data[e];
-    let str = e + ":" + item.join(",");
+    let str = e + ":" + sarashi_data[e].join(",");
     items.push(str);
   });
 
